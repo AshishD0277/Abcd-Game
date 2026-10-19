@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ABC Fruit Finder</title>
+<style>
+  :root {
+    --blue: #2697f5;
+    --blue-dark: #1267bd;
+    --cream: #fffdf2;
+    --ink: #173c70;
+    --green: #55bd55;
+    --yellow: #ffcf4a;
+    --pink: #ffe8e4;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Trebuchet MS", Arial, sans-serif;
+    color: var(--ink);
+    background: linear-gradient(180deg, #7ee4ff 0%, #e0f9ff 55%, #b8f08c 100%);
+  }
+  button { font: inherit; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px; padding: 14px clamp(16px, 4vw, 44px);
+    background: var(--blue); color: white; box-shadow: 0 4px 0 #1479d2;
+  }
+  .brand { font-weight: 900; font-size: clamp(1.5rem, 4vw, 2.5rem); letter-spacing: -1px; }
+  .brand span { color: #ffe15b; text-shadow: 2px 3px 0 #1267bd; }
+  .tagline { font-size: .95rem; font-weight: 700; }
+  .stats { display: flex; gap: 10px; }
+  .stat {
+    background: var(--blue-dark); border-radius: 999px; padding: 9px 16px;
+    font-weight: 800; white-space: nowrap;
+  }
+  main { width: min(1100px, 94%); margin: 24px auto 34px; }
+  .game-panel {
+    background: var(--cream); border: 5px solid white; border-radius: 28px;
+    padding: clamp(16px, 3vw, 30px); box-shadow: 0 12px 0 #4cae65;
+  }
+  .intro {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 18px;
+    align-items: center; margin-bottom: 22px;
+  }
+  .big-letter {
+    font-size: clamp(4rem, 10vw, 7rem); font-weight: 1000; line-height: .9;
+    color: #ff3c58; text-shadow: 0 5px 0 #d91d3b; min-width: 80px;
+  }
+  h1 { font-size: clamp(1.6rem, 4vw, 2.6rem); margin: 0 0 7px; }
+  .instruction { font-size: clamp(1rem, 2vw, 1.2rem); margin: 0; line-height: 1.45; }
+  .target-card {
+    background: var(--pink); border: 3px solid #ffd0c7; border-radius: 22px;
+    padding: 12px 20px; display: flex; align-items: center; gap: 12px;
+    min-width: 190px;
+  }
+  .target-emoji { font-size: clamp(2.8rem, 6vw, 4rem); }
+  .target-title { font-size: 1.15rem; font-weight: 900; }
+  .target-title strong { color: #f52d50; font-size: 1.4rem; }
+  .target-sub { margin-top: 4px; font-size: .9rem; }
+  .fruit-grid {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px;
+    padding: 14px; background: #fff8e4; border: 3px solid #f5e4b7; border-radius: 22px;
+  }
+  .fruit-option {
+    min-height: 150px; border: 3px solid #f2e3bf; border-radius: 20px;
+    background: white; color: var(--ink); cursor: pointer; padding: 12px 6px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 7px; transition: transform .15s, border-color .15s, background .15s;
+  }
+  .fruit-option:hover, .fruit-option:focus-visible {
+    transform: translateY(-3px); border-color: #69c9ff; outline: 3px solid #bceaff;
+  }
+  .fruit-option:focus-visible { outline-offset: 2px; }
+  .fruit-option:disabled { cursor: default; opacity: .9; }
+  .fruit-emoji { font-size: clamp(2.6rem, 5vw, 4.1rem); line-height: 1.1; }
+  .fruit-name { font-size: clamp(.9rem, 1.8vw, 1.1rem); font-weight: 900; }
+  .fruit-option.correct { background: #e4ffe5; border-color: #4fbd60; }
+  .fruit-option.wrong { background: #fff0ee; border-color: #ff8c8c; }
+  .feedback {
+    min-height: 42px; margin: 14px 4px 0; text-align: center;
+    font-size: clamp(1rem, 2vw, 1.25rem); font-weight: 900;
+  }
+  .feedback.good { color: #218b37; }
+  .feedback.try { color: #b85a20; }
+  .controls {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; margin-top: 10px;
+  }
+  .control-btn {
+    border: 0; border-radius: 999px; padding: 13px 20px; font-weight: 900;
+    cursor: pointer; color: white; background: var(--blue); box-shadow: 0 4px 0 #1267bd;
+  }
+  .control-btn:hover { filter: brightness(1.05); }
+  .control-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #1267bd; }
+  .control-btn.secondary { background: #50b95d; box-shadow: 0 4px 0 #278b36; }
+  .control-btn:disabled { opacity: .45; cursor: not-allowed; }
+  .helper { font-size: .95rem; font-weight: 700; text-align: center; flex: 1; }
+  .footer-note { text-align: center; color: #285d36; margin: 20px 0 0; font-weight: 700; }
+  @media (max-width: 760px) {
+    .intro { grid-template-columns: auto 1fr; }
+    .target-card { grid-column: 1 / -1; justify-content: center; }
+    .fruit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 10px; }
+    .fruit-option { min-height: 130px; }
+    .stats { width: 100%; }
+    .stat { flex: 1; text-align: center; }
+  }
+  @media (max-width: 390px) {
+    .topbar { padding: 12px; }
+    .game-panel { padding: 12px; border-radius: 20px; }
+    .big-letter { min-width: 58px; }
+    .control-btn { padding: 12px 15px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div>
+    <div class="brand"><span>ABC</span> Fruits 🍎</div>
+    <div class="tagline" id="tagline">Learn • Find • Grow!</div>
+    <label for="languageSelect" style="display:inline-flex;gap:8px;align-items:center;margin-top:8px;font-weight:800">🌐 <span id="languageLabel">Language</span> <select id="languageSelect" style="border:0;border-radius:10px;padding:7px;font:inherit;color:#173c70"><option value="en">English</option><option value="mr">मराठी</option><option value="hi">हिन्दी</option></select></label>
+  </div>
+  <div class="stats" aria-live="polite">
+    <div class="stat">⭐ <span id="scoreLabel">Score</span>: <span id="score">0</span></div>
+    <div class="stat">🔤 <span id="letterLabel">Letter</span>: <span id="progress">1 / 26</span></div>
+  </div>
+</header>
+
+<main>
+  <section class="game-panel" aria-labelledby="game-heading">
+    <div class="intro">
+      <div class="big-letter" id="bigLetter" aria-hidden="true">A</div>
+      <div>
+        <h1 id="game-heading">Find the Apple!</h1>
+        <p class="instruction"><span id="instructionText">Look at the pictures and tap the</span> <strong id="instructionFruit">apple</strong>.</p>
+      </div>
+      <div class="target-card">
+        <div class="target-emoji" id="targetEmoji" aria-hidden="true">🍎</div>
+        <div>
+          <div class="target-title"><strong id="targetLetter">A</strong> for <span id="targetName">Apple</span></div>
+          <div class="target-sub" id="targetSub">Apple starts with A!</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fruit-grid" id="fruitGrid" aria-label="Choose the matching fruit"></div>
+    <div class="feedback" id="feedback" role="status" aria-live="polite">You can do it! Find the apple 😊</div>
+
+    <div class="controls">
+      <button class="control-btn" id="soundButton" type="button">🔊 Hear the letter</button>
+      <div class="helper">🌟 Every try helps you learn!</div>
+      <button class="control-btn secondary" id="nextButton" type="button" disabled>Next letter ➜</button>
+    </div>
+  </section>
+  <p class="footer-note" id="footerText">Made for little learners • Play, practise, and have fun!</p>
+</main>
+
+<script>
+  const fruits = [
+    { letter: "A", names: {en:"Apple",mr:"सफरचंद",hi:"सेब"}, emoji:"🍎" },
+    { letter: "B", names: {en:"Banana",mr:"केळे",hi:"केला"}, emoji:"🍌" },
+    { letter: "C", names: {en:"Cherry",mr:"चेरी",hi:"चेरी"}, emoji:"🍒" },
+    { letter: "D", names: {en:"Dragon fruit",mr:"ड्रॅगन फ्रूट",hi:"ड्रैगन फ्रूट"}, emoji:"🐉" },
+    { letter: "E", names: {en:"Elderberry",mr:"एल्डरबेरी",hi:"एल्डरबेरी"}, emoji:"🫐" },
+    { letter: "F", names: {en:"Fig",mr:"अंजीर",hi:"अंजीर"}, emoji:"🫒" },
+    { letter: "G", names: {en:"Grapes",mr:"द्राक्षे",hi:"अंगूर"}, emoji:"🍇" },
+    { letter: "H", names: {en:"Honeydew melon",mr:"हनीड्यू खरबूज",hi:"हनीड्यू खरबूजा"}, emoji:"🍈" },
+    { letter: "I", names: {en:"Indian fig",mr:"निवडुंगाचे फळ",hi:"नागफनी का फल"}, emoji:"🌵" },
+    { letter: "J", names: {en:"Jackfruit",mr:"फणस",hi:"कटहल"}, emoji:"🍈" },
+    { letter: "K", names: {en:"Kiwi",mr:"कीवी",hi:"कीवी"}, emoji:"🥝" },
+    { letter: "L", names: {en:"Lemon",mr:"लिंबू",hi:"नींबू"}, emoji:"🍋" },
+    { letter: "M", names: {en:"Mango",mr:"आंबा",hi:"आम"}, emoji:"🥭" },
+    { letter: "N", names: {en:"Nectarine",mr:"नेक्टरीन",hi:"नेक्टरीन"}, emoji:"🍑" },
+    { letter: "O", names: {en:"Orange",mr:"संत्रे",hi:"संतरा"}, emoji:"🍊" },
+    { letter: "P", names: {en:"Pineapple",mr:"अननस",hi:"अनानास"}, emoji:"🍍" },
+    { letter: "Q", names: {en:"Quince",mr:"क्विन्स",hi:"क्विन्स"}, emoji:"🍐" },
+    { letter: "R", names: {en:"Raspberry",mr:"रास्पबेरी",hi:"रसभरी"}, emoji:"🫐" },
+    { letter: "S", names: {en:"Strawberry",mr:"स्ट्रॉबेरी",hi:"स्ट्रॉबेरी"}, emoji:"🍓" },
+    { letter: "T", names: {en:"Tangerine",mr:"टॅन्जरीन",hi:"टेंगरीन"}, emoji:"🍊" },
+    { letter: "U", names: {en:"Ugli fruit",mr:"अग्ली फ्रूट",hi:"अग्ली फ्रूट"}, emoji:"🍊" },
+    { letter: "V", names: {en:"Velvet apple",mr:"वेल्वेट अॅपल",hi:"वेल्वेट एप्पल"}, emoji:"🍎" },
+    { letter: "W", names: {en:"Watermelon",mr:"कलिंगड",hi:"तरबूज"}, emoji:"🍉" },
+    { letter: "X", names: {en:"Xigua",mr:"शिगुआ (चिनी कलिंगड)",hi:"शिगुआ (चीनी तरबूज)"}, emoji:"🍉" },
+    { letter: "Y", names: {en:"Yellow passion fruit",mr:"पिवळे पॅशन फ्रूट",hi:"पीला पैशन फ्रूट"}, emoji:"🍋" },
+    { letter: "Z", names: {en:"Ziziphus",mr:"बोर",hi:"बेर"}, emoji:"🍒" }
+  ];
+  const ui = {
+    en: { tagline:"Learn • Find • Grow!", language:"Language", score:"Score", letter:"Letter", find:"Find the", instruction:"Look at the pictures and tap the", starts:"starts with", prompt:"You can do it! Find the", success:"Amazing!", isFor:"is for", try:"Good try! Can you find", encouragement:"Every try helps you learn!", hear:"🔊 Hear the letter", next:"Next letter ➜", again:"Play again ↻", footer:"Made for little learners • Play, practise, and have fun!", initial:"You can do it! Find the", good:"Great job!", wrong:"Good try. Find" },
+    mr: { tagline:"शिका • शोधा • मजा करा!", language:"भाषा", score:"गुण", letter:"अक्षर", find:"शोधा", instruction:"चित्रे पाहा आणि योग्य फळावर टिचकी मारा:", starts:"या अक्षराने सुरू होते", prompt:"तुम्ही नक्की करू शकता! शोधा:", success:"शाब्बास!", isFor:"म्हणजे", try:"छान प्रयत्न! हे फळ शोधा:", encouragement:"प्रत्येक प्रयत्नातून नवीन शिकायला मिळते!", hear:"🔊 अक्षर ऐका", next:"पुढचे अक्षर ➜", again:"पुन्हा खेळा ↻", footer:"लहान मुलांसाठी • खेळा, शिका आणि मजा करा!", initial:"चला, फळ शोधूया:", good:"खूप छान!", wrong:"छान प्रयत्न. शोधा" },
+    hi: { tagline:"सीखें • खोजें • मज़े करें!", language:"भाषा", score:"अंक", letter:"अक्षर", find:"ढूँढो", instruction:"तस्वीरें देखो और सही फल पर टैप करो:", starts:"इस अक्षर से शुरू होता है", prompt:"तुम कर सकते हो! ढूँढो:", success:"शाबाश!", isFor:"का पहला अक्षर है", try:"अच्छी कोशिश! यह फल ढूँढो:", encouragement:"हर कोशिश से कुछ नया सीखते हैं!", hear:"🔊 अक्षर सुनें", next:"अगला अक्षर ➜", again:"फिर से खेलें ↻", footer:"नन्हे बच्चों के लिए • खेलो, सीखो और मज़े करो!", initial:"चलो, फल ढूँढें:", good:"बहुत खूब!", wrong:"अच्छी कोशिश। ढूँढो" }
+  };
+  let language = "en", currentIndex = 0, score = 0, answered = false;
+  const $ = id => document.getElementById(id);
+  const shuffle = array => [...array].sort(() => Math.random() - 0.5);
+  const fruitName = fruit => fruit.names[language];
+  function speak(text) {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = language === "mr" ? "mr-IN" : language === "hi" ? "hi-IN" : "en-US";
+    utterance.rate = 0.82; utterance.pitch = 1.12;
+    window.speechSynthesis.speak(utterance);
+  }
+  function renderRound() {
+    answered = false;
+    const target = fruits[currentIndex], t = ui[language], name = fruitName(target);
+    document.documentElement.lang = language === "mr" ? "mr" : language === "hi" ? "hi" : "en";
+    $("tagline").textContent = t.tagline;
+    $("languageLabel").textContent = t.language;
+    $("scoreLabel").textContent = t.score;
+    $("letterLabel").textContent = t.letter;
+    $("game-heading").textContent = `${t.find} ${name}!`;
+    $("instructionText").textContent = t.instruction;
+    $("instructionFruit").textContent = language === "en" ? name.toLowerCase() : name;
+    $("bigLetter").textContent = target.letter;
+    $("targetEmoji").textContent = target.emoji;
+    $("targetLetter").textContent = target.letter;
+    $("targetName").textContent = name;
+    $("targetSub").textContent = language === "en" ? `${name} starts with ${target.letter}!` : language === "mr" ? `${name} ${target.letter} या इंग्रजी अक्षरासाठी!` : `${name}, ${target.letter} अक्षर के लिए!`;
+    $("score").textContent = score;
+    $("progress").textContent = `${currentIndex + 1} / 26`;
+    $("feedback").className = "feedback";
+    $("feedback").textContent = `${t.prompt} ${name} 😊`;
+    $("nextButton").disabled = true;
+    $("nextButton").textContent = currentIndex === 25 ? t.again : t.next;
+    $("soundButton").textContent = t.hear;
+    $("footerText").textContent = t.footer;
+    const options = shuffle([target, ...shuffle(fruits.filter(f => f.letter !== target.letter)).slice(0, 6)]);
+    const grid = $("fruitGrid"); grid.innerHTML = "";
+    options.forEach(fruit => {
+      const button = document.createElement("button"); button.type = "button"; button.className = "fruit-option";
+      button.setAttribute("aria-label", fruitName(fruit));
+      button.innerHTML = `<span class="fruit-emoji" aria-hidden="true">${fruit.emoji}</span><span class="fruit-name">${fruitName(fruit)}</span>`;
+      button.addEventListener("click", () => chooseFruit(fruit, button)); grid.appendChild(button);
+    });
+  }
+  function chooseFruit(fruit, button) {
+    if (answered) return;
+    const target = fruits[currentIndex], t = ui[language], name = fruitName(target);
+    if (fruit.letter === target.letter) {
+      answered = true; score++; $("score").textContent = score; button.classList.add("correct");
+      document.querySelectorAll(".fruit-option").forEach(item => item.disabled = true);
+      $("feedback").className = "feedback good";
+      $("feedback").textContent = `${t.success} ${target.letter} ${t.isFor} ${name}! ⭐`;
+      $("nextButton").disabled = false; speak(`${t.good} ${target.letter}. ${name}!`);
+    } else {
+      button.classList.add("wrong"); $("feedback").className = "feedback try";
+      $("feedback").textContent = `${t.try} ${name} 😊`; speak(`${t.wrong} ${name}.`);
+      window.setTimeout(() => button.classList.remove("wrong"), 650);
+    }
+  }
+  $("languageSelect").addEventListener("change", event => { language = event.target.value; renderRound(); });
+  $("soundButton").addEventListener("click", () => {
+    const target = fruits[currentIndex], name = fruitName(target);
+    speak(language === "en" ? `${target.letter} for ${name}. Find the ${name}.` : language === "mr" ? `${target.letter}. ${name} शोधा.` : `${target.letter}. ${name} ढूँढो.`);
+  });
+  $("nextButton").addEventListener("click", () => {
+    if (currentIndex === 25) { currentIndex = 0; score = 0; } else currentIndex++;
+    renderRound();
+    const f = fruits[currentIndex]; speak(`${f.letter}. ${fruitName(f)}`);
+  });
+  renderRound();
+</script>
+</body>
+</html>
